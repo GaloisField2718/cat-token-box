@@ -18,7 +18,7 @@ packages
 
 * `smartcontracts`
 
-Smart contracts implementing the `CAT` protocol written in [sCrypt](https://github.com/sCrypt-Inc/scrypt-ts).
+Smart contracts implementing the `CAT` protocol written in [sCrypt](https://github.com/sCrypt-Inc/scryptlib).
 
 
 * `tracker`
