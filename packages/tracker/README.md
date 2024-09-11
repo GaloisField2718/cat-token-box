@@ -28,7 +28,7 @@ sudo chmod 777 docker/data
 sudo chmod 777 docker/pgdata
 ```
 
-3. Run `postgresql` and `bitcoind`:
+3. Run `postgresql` and `fractald`:
 
 ```bash
 docker compose up -d
