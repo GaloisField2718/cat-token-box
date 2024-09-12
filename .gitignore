@@ -1,3 +1,6 @@
+# IMPORTANT!
+./packages/tracker/docker/data/bitcoin.conf
+
 .vscode/
 **/.DS_Store
 
@@ -37,6 +40,7 @@ typings/
 # dotenv environment variables file
 **/.env
 **/.env.test
+**/**/.env
 
 # Turbo
 **/.turbo
