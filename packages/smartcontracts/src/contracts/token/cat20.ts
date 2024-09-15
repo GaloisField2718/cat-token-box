@@ -42,7 +42,8 @@ export type TokenUnlockArgs = {
     contractInputIndex: int32
 }
 
-export class CAT20 extends SmartContract {
+
+export class CAT20 extends SmartContract { // SC term not good for Bitcoin-based system!
     @prop()
     minterScript: ByteString
 
@@ -60,25 +61,48 @@ export class CAT20 extends SmartContract {
         tokenUnlockArgs: TokenUnlockArgs,
 
         // verify preTx data part
+        /*    Pay attention 
+        *    to verification part.
+        *            
+        *     Mainly achieved with
+        * `SigHashUtils` &  `StateUtils` lib
+        *
+        * this LIBs Usage 
+        *  `SigHashUtils`:
+        *    - checkSHPreimage()
+        *    - Gx
+        *    - checkPrevoutsCtx()
+        *    - checkSpentScriptsCtx()
+        *  `StateUtils`:
+        *    - verifyPreStateHash()
+        *
+        */
+        
         preState: CAT20State,
         preTxStatesInfo: PreTxStatesInfo,
 
         // amount check guard
         guardInfo: GuardInfo,
+        
         // backtrace
         backtraceInfo: BacktraceInfo,
         // common args
         // current tx info
-        shPreimage: SHPreimage,
-        prevoutsCtx: PrevoutsCtx,
+        shPreimage: SHPreimage, // How is it provided in tx?
+        prevoutsCtx: PrevoutsCtx, // Ctx: Contextual information about previous outputs. `ContextTX?`
         spentScripts: SpentScriptsCtx
     ) {
         // Check sighash preimage.
         assert(
             this.checkSig(
                 SigHashUtils.checkSHPreimage(shPreimage),
-                SigHashUtils.Gx
-            ),
+                SigHashUtils.Gx 
+            )
+            /*
+            * Uses SigHashUtils to validate the preimage and checks 
+            * the signature against a predefined value (Gx).
+            */
+            ,
             'preimage check error'
         )
         // check ctx
@@ -98,7 +122,12 @@ export class CAT20 extends SmartContract {
             backtraceInfo.preTx.outputScriptList[STATE_OUTPUT_INDEX],
             prevoutsCtx.outputIndexVal
         )
-
+        /*
+        *  Computes the state hash using CAT20Proto and verifies 
+        *  it against the stored state information.
+        *
+        */
+        
         const preScript = spentScripts[Number(prevoutsCtx.inputIndexVal)]
         Backtrace.verifyToken(
             prevoutsCtx.spentTxhash,
@@ -106,7 +135,11 @@ export class CAT20 extends SmartContract {
             this.minterScript,
             preScript
         )
-
+        /*
+        *  Uses the Backtrace utility to verify the token's 
+        *  lineage against the minterScript and the previous script.
+        */
+        
         // make sure the token is spent with a valid guard
         this.valitateGuard(
             guardInfo,
@@ -116,7 +149,7 @@ export class CAT20 extends SmartContract {
             prevoutsCtx.prevouts,
             spentScripts
         )
-
+        
         if (tokenUnlockArgs.isUserSpend) {
             // unlock token owned by user key
             assert(
@@ -131,6 +164,12 @@ export class CAT20 extends SmartContract {
                     tokenUnlockArgs.userPubKey
                 )
             )
+        /*
+        *  - Hashes the user's public key prefix and public key 
+        *   to ensure it matches the stored owner's address.
+        *  - Verifies the user's signature to authenticate the spend request.
+        *
+        */
         } else {
             // unlock token owned by contract script
             assert(
@@ -139,9 +178,25 @@ export class CAT20 extends SmartContract {
                         spentScripts[Number(tokenUnlockArgs.contractInputIndex)]
                     )
             )
+            /*
+            * Ensures that the owner's address matches 
+            * the hash of the script at the specified 
+            * contract input index.
+            * [Clarify InputIndex for contract]
+            */
+            
         }
     }
-
+    // According to GPT: Ensures that the token spend operation adheres to the guard conditions, 
+    // maintaining the integrity and security of the token ecosystem.
+    /*
+    * The question of integrity and security should be 
+    * deeply considered as we rely on Bitcoin we should be
+    * able to inherit of it. 
+    * If the transaction is accepted by node can we 
+    * assume something about security consideration? 
+    *
+    */
     @method()
     valitateGuard(
         guardInfo: GuardInfo,
