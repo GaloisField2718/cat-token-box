@@ -41,7 +41,8 @@ export type PrevoutsCtx = {
 export type SpentScriptsCtx = FixedArray<ByteString, typeof MAX_INPUT>
 
 export class SigHashUtils extends SmartContractLib {
-    // Data for checking sighash preimage:
+    // Data for checking sighash preimage: 
+        // Where this PubKey is coming from?
     @prop()
     static readonly Gx: PubKey = PubKey(
         toByteString(
